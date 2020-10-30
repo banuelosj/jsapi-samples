@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Sketch Event Tester</title>
+
+  <link rel="stylesheet"
+    href="https://s3-us-west-1.amazonaws.com/patterns.esri.com/files/calcite-web/1.2.5/css/calcite-web.min.css" />
+  <link rel="stylesheet" href="https://js.arcgis.com/next/esri/themes/light/main.css" />
+  <script
+    src="https://s3-us-west-1.amazonaws.com/patterns.esri.com/files/calcite-web/1.2.5/js/calcite-web.min.js"></script>
+  <script src="https://js.arcgis.com/next/"></script>
+
+  <style>
+    html,
+    body {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+    }
+
+    .divBase {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 70%;
+    }
+
+    .divPanel {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 30%;
+    }
+
+    #panelDiv {
+      float: right;
+    }
+
+    #viewDiv {
+      float: left;
+    }
+
+    .bold-red {
+      color: red;
+    }
+  </style>
+  <script>
+    require([
+      "esri/widgets/Sketch",
+      "esri/Map",
+      "esri/layers/GraphicsLayer",
+      "esri/views/MapView"
+    ], function (Sketch, Map, GraphicsLayer, MapView) {
+      // html elements
+      const cardList = document.getElementById("cardsList");
+      const panelDiv = document.getElementById("panelDiv");
+      const panelTitle = document.getElementById("panelTitle");
+
+      let activeEvent = ""; // will allow us to switch between active event 
+      // listenting to output to the panel
+
+      //buttons and their functions
+      const clearBtn = document.getElementById('clearBtn');
+      // const createBtn = document.getElementById('createBtn');
+      // const updateBtn = document.getElementById('updateBtn');
+      // const deleteBtn = document.getElementById('deleteBtn');
+      // const redoBtn = document.getElementById('redoBtn');
+      // const undoBtn = document.getElementById('undoBtn');
+
+      clearBtn.onclick = function () { cardList.innerHTML = "" };
+      // createBtn.onclick = function(){activeEvent = "create";};
+      // updateBtn.onclick = function(){activeEvent = "update";};
+      // deleteBtn.onclick = function(){activeEvent = "delete";};
+      // redoBtn.onclick = function(){activeEvent = "redo";};
+      // undoBtn.onclick = function(){activeEvent = "undo";};
+
+      const layer = new GraphicsLayer();
+
+      const map = new Map({
+        basemap: "topo-vector",
+        layers: [layer]
+      });
+
+      const view = new MapView({
+        container: "viewDiv",
+        map: map,
+        zoom: 5,
+        center: [90, 45]
+      });
+
+      const sketch = new Sketch({
+        layer: layer,
+        view: view,
+        // graphic will be selected as soon as it is created
+        creationMode: "update"
+      });
+
+      view.ui.add(sketch, "top-right");
+      //view.ui.add(document.getElementById('eventBtnDiv'), "top-left");
+
+      view.when(() => {
+        //once the view loads we will watch for all event changes.
+        //the buttons control what event outputs will be seen in the
+        //panel
+        sketch.on('create', (result) => { watchCreate(result) });
+        sketch.on('delete', (result) => { watchDelete(result) });
+        sketch.on('update', (result) => { watchUpdate(result) });
+        sketch.on('undo', (result) => { watchUndo(result) });
+        sketch.on('redo', (result) => { watchRedo(result) });
+      })
+
+      function watchCreate(obj) {
+        // creat Obj contains
+        // { graphic, state, tool, toolEventInfo, type}
+        const outputStr = `
+                <p>geometry: <b class="bold-red">${obj.graphic ? obj.graphic.geometry.type : null}</b><br/>
+                state: <b class="bold-red">${obj.state}</b><br/>
+                tool: <b class="bold-red">${obj.tool}</b><br/>
+                CreateToolEventInfo: 
+                    type: <b class="bold-red">${obj.toolEventInfo ? obj.toolEventInfo.type : null}</b></p>
+            `;
+        //cardList.innerHTML = outputStr;
+        createCard(outputStr, obj.type);
+        scrollToEnd();
+      }
+
+      function watchDelete(obj) {
+        // creat Obj contains
+        // { graphics, tool, type}
+        const outputStr = `
+                <p>graphics: ${JSON.stringify(obj.graphics)}<br/>
+                tool: <b class="bold-red">${obj.tool}</b><br/>
+            `;
+        //cardList.innerHTML = outputStr;
+        createCard(outputStr, obj.type);
+        scrollToEnd();
+      }
+
+      function watchUpdate(obj) {
+        // creat Obj contains
+        // { graphics, state, aborted, tool, type, toolEventInfo}
+        const outputStr = `
+                <p>graphics: ${listGeometries(obj.graphics)}<br/>
+                state: <b class="bold-red">${obj.state}</b><br/>
+                tool: <b class="bold-red">${obj.tool}</b><br/>
+                aborted: ${obj.aborted}<br/>
+                UpdateToolEventInfo: 
+                    type: <b class="bold-red">${obj.toolEventInfo ? obj.toolEventInfo.type : null}</b></p>
+                </p>
+            `;
+        //cardList.innerHTML = outputStr;
+        createCard(outputStr, obj.type);
+        scrollToEnd();
+      }
+
+      function watchUndo(obj) {
+        // creat Obj contains
+        // { graphics, tool, type}
+        const outputStr = `
+                <p>graphics: ${obj.graphics}<br/>
+                tool: <b class="bold-red">${obj.tool}</b><br/>
+            `;
+        //cardList.innerHTML = outputStr;
+        createCard(outputStr, obj.type);
+        scrollToEnd();
+      }
+
+      function watchRedo(obj) {
+        // creat Obj contains
+        // { graphics, tool, type}
+        const outputStr = `
+                <p>graphics: ${obj.graphics}<br/>
+                tool: <b class="bold-red">${obj.tool}</b><br/>
+            `;
+        //cardList.innerHTML = outputStr;
+        createCard(outputStr, obj.type);
+        scrollToEnd();
+      }
+
+      function createCard(content, type) {
+        let card = "";
+        const cardDiv = document.createElement("div");
+
+        card = `
+                <div class="card card-bar-blue block">
+                    <div class="card-content">
+                        <h4>${type}</h4>
+                        ${content}
+                    </div>
+                </div> 
+            `;
+        cardDiv.innerHTML = card;
+        cardList.appendChild(cardDiv);
+      }
+
+      function listGeometries(graphics) {
+        const geometries = graphics.map((graphic) => graphic.geometry.type);
+        return geometries;
+      }
+
+      // keep the scrollbar scrolled down to view the latest updates
+      function scrollToEnd() {
+        panelDiv.scrollTop = panelDiv.scrollHeight;
+      }
+
+    });
+  </script>
+</head>
+
+<body>
+  <div style="height: 100%;">
+    <div class="divPanel" id="panelDiv" style="overflow: scroll;">
+      <div class="panel modifier-class">
+        <h4 class="trailer-half" id="panelTitle">
+          Event Watching
+        </h4>
+        <i class="icon-ui-trash" id="clearBtn" style="cursor: pointer;"></i>
+        <p id="panelTitle"></p>
+        <!-- <div id="eventBtnDiv">
+                <button class="btn btn-grouped" id="createBtn">create</button>
+                <button class="btn btn-grouped" id="updateBtn">update</button>
+                <button class="btn btn-grouped" id="deleteBtn">delete</button>
+                <button class="btn btn-grouped" id="redoBtn">redo</button>
+                <button class="btn btn-grouped" id="undoBtn">undo</button>
+            </div> -->
+        </br>
+        <div id="cardsList"></div>
+      </div>
+    </div>
+    <div class="divBase" id="viewDiv"></div>
+  </div>
+</body>
+
+</html>
