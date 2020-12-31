@@ -49,4 +49,4 @@ The index.html file will be ready for deployment on a webserver, or just by doub
 * GraphicsLayer
 * Graphic
 
-## [Live Sample](https://banuelosj.github.io/jsapi-samples/tree/master/typescript-samples/custom-sketch-with-text/)
+## [Live Sample](https://banuelosj.github.io/jsapi-samples/typescript-samples/custom-sketch-with-text/)
