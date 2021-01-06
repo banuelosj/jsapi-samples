@@ -39,7 +39,6 @@ The index.html file will be ready for deployment on a webserver, or just by doub
 ## Built With
 
 * [ArcGIS JavaScript API](https://developers.arcgis.com/javascript/) - Using the 4.18 JavaScript API
-* [Semantic UI](https://semantic-ui.com) for the css of the ui components
 * [TypeScript](https://www.typescriptlang.org/)
 
 ## Relevant API
