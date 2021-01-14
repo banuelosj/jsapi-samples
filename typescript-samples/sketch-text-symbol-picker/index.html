@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no" />
+  <title>Sketch with Text</title>
+  <style>
+    html,
+    body,
+    #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.18/esri/themes/light/main.css" />
+  <link rel="stylesheet" href="app/styles/styles.css" />
+
+  <link rel="stylesheet" type="text/css" href="https://jbanuelos1.esri.com/styles/calcite/calcite.css" />
+  <script type="module" src="https://unpkg.com/@esri/calcite-components/dist/calcite/calcite.esm.js"></script>
+  <script nomodule="" src="https://unpkg.com/@esri/calcite-components/dist/calcite/calcite.js"></script>
+  
+  <script>
+    var locationPath = location.pathname.replace(/\/[^/]*$/, "");
+    window.dojoConfig = {
+      packages: [
+        {
+          name: "app",
+          location: locationPath + "/app",
+        },
+      ],
+    };
+  </script>
+  <script src="https://js.arcgis.com/4.18"></script>
+</head>
+
+<body>
+  <div id="viewDiv"></div>
+  <div id="topbar">
+    <button class="esri-sketch__button esri-icon-polyline" id="polylineBtn" type="button"
+      title="Draw a polyline"></button>
+    <button class="esri-sketch__button esri-icon-polygon" id="polygonBtn" type="button" title="Draw a polygon"></button>
+    <button class="esri-sketch__button" id="textBtn">
+      <b><p style="font-family: Cambria; font-size: 24px;">T</p></b>
+    </button>
+  </div>
+  <div class="esri-editor__controls" id="stylePicker">
+    <label class="esri-feature-form__label">
+      <input type="text" class="esri-input esri-feature-form__input" id="textInput" placeholder="text goes here..." />
+    </label>
+    <calcite-color id="color-picker"></calcite-color>
+    <button id="updateBtn" class="esri-editor__control-button esri-button esri-button--disabled" type="button">Update</button>
+  </div>
+  
+  <script>
+    require(["app/main"]);
+  </script>
+</body>
+
+</html>
