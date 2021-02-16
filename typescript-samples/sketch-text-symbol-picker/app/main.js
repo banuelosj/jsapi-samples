@@ -83,6 +83,8 @@ define(["require", "exports", "tslib", "esri/Map", "esri/views/MapView", "esri/w
     view.when(() => {
         sketchViewModel.on("update", (evt) => {
             let currentGraphic = evt.graphics[0];
+            let currentSymbol = evt.graphics[0].symbol;
+            colorPicker.value = currentSymbol.color.toHex();
             if (evt.state === "active" && evt.tool === "move") {
                 // don't want the picker to show while moving the graphic on the map
                 return;
@@ -90,9 +92,6 @@ define(["require", "exports", "tslib", "esri/Map", "esri/views/MapView", "esri/w
             if (currentGraphic.geometry.type === "point") {
                 // open the expand to view the text input
                 expand.expand();
-                // once the update completes, update the text with the
-                // current text in the input element
-                let currentText = textInput.nodeValue;
                 if (evt.state === "complete") {
                     currentGraphic.symbol = new TextSymbol_1.default({
                         //text: textSymbol.text,
