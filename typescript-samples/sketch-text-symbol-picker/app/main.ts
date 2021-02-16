@@ -14,7 +14,7 @@ const drawTextBtn = document.getElementById("textBtn");
 const textInput: HTMLInputElement = document.getElementById(
   "textInput"
 ) as HTMLInputElement;
-const colorPicker = document.getElementById("color-picker");
+const colorPicker: any = document.getElementById("color-picker");
 const updateBtn: HTMLButtonElement = document.getElementById("updateBtn") as HTMLButtonElement;
 // ui elements
 
@@ -100,6 +100,9 @@ updateBtn.addEventListener('click', updateSymbol);
 view.when(() => {
   sketchViewModel.on("update", (evt) => {
     let currentGraphic = evt.graphics[0];
+    let currentSymbol = evt.graphics[0].symbol as TextSymbol;
+    colorPicker.value = currentSymbol.color.toHex();
+
     if(evt.state === "active" && evt.tool === "move") {
       // don't want the picker to show while moving the graphic on the map
       return;
@@ -107,10 +110,7 @@ view.when(() => {
     if (currentGraphic.geometry.type === "point") {
       // open the expand to view the text input
       expand.expand();
-
-      // once the update completes, update the text with the
-      // current text in the input element
-      let currentText: string = textInput.nodeValue;
+      
       if (evt.state === "complete") {
         currentGraphic.symbol = new TextSymbol({
           //text: textSymbol.text,
