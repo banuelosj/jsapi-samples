@@ -1,20 +1,18 @@
-# Edit Text Symbol Graphics with Color Picker
+# Edit Text Symbol Font and Color with Calcite Components
 
-This Typescript application was created to demonstrate how to edit `Graphics` with a `TextSymbol` using the ArcGIS API for JavaScript. This app utilized the `SketchViewModel` to allows users to add points, and add text for the `TextSymbol` by typing text into an [HTMLInputElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement).
+This Typescript application was created to demonstrate how to edit `Graphics` with a `TextSymbol` using the ArcGIS API for JavaScript. This app utilized the `SketchViewModel` to allows users edit text for the `TextSymbol` by typing text into an [HTMLInputElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement).
 
-This application uses the Esri [calcite-components](https://github.com/Esri/calcite-components) to display a color picker using the [calcite-color](https://github.com/Esri/calcite-components/tree/master/src/components/calcite-color) component.
+This application uses the Esri [calcite-components](https://github.com/Esri/calcite-components) to display a color picker using the [calcite-color](https://github.com/Esri/calcite-components/tree/master/src/components/calcite-color) component. It also utilizes the [calcite-select](https://github.com/Esri/calcite-components/tree/master/src/components/calcite-select) and the [calcite-accordion](https://github.com/Esri/calcite-components/tree/master/src/components/calcite-accordion) to create a user interface where a user can update the font size, weight, style, and family.
 
-A user can update existing text and text color by selecting a `Graphic`. Once a graphic is selected, the `SketchViewModel` fires the `update` event. An `Expand` widget expands to to display a `div` containing the HTMLInputElement and the calcite-color component. A user is able to update the color of the existing graphic, or edit the color and text of a new graphic added to the map.
+A user can update existing text, text color, and text font by selecting a `Graphic`. Once a graphic is selected, the `SketchViewModel` fires the `update` event. An `Expand` widget expands to to display a `div` containing the calcite components. The app autopopulates the ui components with the values of the selected graphic. For example, the default color of the `calicte-color` will contain the color of the selected symbol.
 
-<img src="sketch-color-picker.gif" width="600"/>
+<img src="sketch-text-symbol-font-picker.gif" width="600"/>
 
 ## How to use the sample
 1. Click on the `Graphic` on the `Map` to select the point graphic with a `TextSymbol`.
-2. The `Expand` widget will open up with an `HTMLInputElement` and a `calcite-color` component, which displays a color picker, to allow a user to type text and change the text color.
-3. Type some text into the input, and choose a color on the color picker. Then click on the Update button to apply the changes on the graphic.
-4. This will call the `complete()` method from the `SketchViewModel` to complete the editing operation. The text for the `TextSymbol` of the graphic will update with the text in the input, and the text color will match the color chosen with the color picker.
-5. A user can also click on the text button on the top right div to add a new point onto the map.
-6. Once a new point is added to the map, it will stay in `update` mode, so a user can type text into the input to add text to the new graphic and its `TextSymbol`, or change its color.
+2. The `Expand` widget will open up a panel containing a text input, with a calcite-accordion. A user can select which properties of the graphic they would like to update by selecting the corresponding calcite-accordion-item. The accordion will expand revealing the calcite component that allows you to update the property values whether using the color picker or select and input elements.
+3. Type some text into the input, and choose a color, or change a font property. Then click on the Update button to apply the changes on the graphic.
+4. This will call the `complete()` method from the `SketchViewModel` to complete the editing operation. The text for the `TextSymbol` of the graphic will update with the text in the input, and the text color will match the color chosen with the color picker, as well as the fonts chosen..
 
 ## Getting Started
 
@@ -50,5 +48,8 @@ The index.html file will be ready for deployment on a webserver, or just by doub
 * TextSymbol
 * GraphicsLayer
 * Graphic
+* calcite-color
+* calcite-accordion
+* calcite-select
 
-## [Live Sample](https://banuelosj.github.io/jsapi-samples/typescript-samples/sketch-text-symbol-picker/)
+## [Live Sample](https://banuelosj.github.io/jsapi-samples/typescript-samples/sketch-text-symbol-font-picker/)
