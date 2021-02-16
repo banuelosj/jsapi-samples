@@ -13,6 +13,9 @@
       height: 100%;
       width: 100%;
     }
+    input {
+      width: 200px;
+    }
   </style>
   <link rel="stylesheet" href="https://js.arcgis.com/4.18/esri/themes/light/main.css" />
   <link rel="stylesheet" href="app/styles/styles.css" />
@@ -40,8 +43,12 @@
       <b><p style="font-family: Cambria; font-size: 24px;">T</p></b>
     </button>
   </div>
+  
   <div class="ui input" id="textInputDiv">
-    <input type="text" name="name" id="textInput" placeholder="text goes here..." />
+    <label class="esri-feature-form__label">
+      <input type="text" class="esri-input" id="textInput" placeholder="text goes here..." />
+    </label>
+    <!-- <input type="text" name="name" id="textInput" placeholder="text goes here..." /> -->
   </div> 
   <script>
     require(["app/main"]);

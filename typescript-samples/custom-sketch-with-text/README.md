@@ -4,7 +4,7 @@ This Typescript application was created to demonstrate how to edit `Graphics` wi
 
 A user can update existing text by selecting a `Graphic`. Once a graphic is selected, the `SketchViewModel` fires the `update` event, which updates the selected graphics text with the text entered in the input element.
 
-<img src="sketch-text.gif" width="600"/>
+<img src="text-symbol-sketch.gif" width="600"/>
 
 ## How to use the sample
 1. Click on the `Graphic` on the `Map` to select the point graphic with a `TextSymbol`.
