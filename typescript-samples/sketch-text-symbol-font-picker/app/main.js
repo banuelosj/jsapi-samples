@@ -155,7 +155,7 @@ define(["require", "exports", "tslib", "esri/Map", "esri/views/MapView", "esri/w
     //weightInput.addEventListener('input', enableUpdateBtn);
     //styleInput.addEventListener('input', enableUpdateBtn);
     familyInput.addEventListener('input', enableUpdateBtn);
-    colorPicker.addEventListener("calciteColorChange", (evt) => {
+    colorPicker.addEventListener("calciteColorPickerChange", (evt) => {
         if (sketchViewModel.state === "active" &&
             sketchViewModel.updateGraphics.getItemAt(0).geometry.type === "point") {
             // a point graphic is being updated, so allow symbol to be updated
@@ -164,11 +164,13 @@ define(["require", "exports", "tslib", "esri/Map", "esri/views/MapView", "esri/w
             enableUpdateBtn();
         }
     });
-    weightInput.addEventListener('calciteSelectChange', function () {
+    weightInput.addEventListener('calciteSelectChange', (evt) => {
+        console.log(evt);
         currentFont.weight = weightInput.selectedOption.value;
         enableUpdateBtn();
     });
-    styleInput.addEventListener('calciteSelectChange', function () {
+    styleInput.addEventListener('calciteSelectChange', (evt) => {
+        console.log(evt);
         currentFont.style = styleInput.selectedOption.value;
         enableUpdateBtn();
     });

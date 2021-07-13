@@ -184,7 +184,7 @@ sizeInput.addEventListener("input", enableUpdateBtn);
 //styleInput.addEventListener('input', enableUpdateBtn);
 familyInput.addEventListener('input', enableUpdateBtn);
 
-colorPicker.addEventListener("calciteColorChange", (evt: any) => {
+colorPicker.addEventListener("calciteColorPickerChange", (evt: any) => {
   if (
     sketchViewModel.state === "active" &&
     sketchViewModel.updateGraphics.getItemAt(0).geometry.type === "point"
@@ -197,12 +197,14 @@ colorPicker.addEventListener("calciteColorChange", (evt: any) => {
   }
 });
 
-weightInput.addEventListener('calciteSelectChange', function() {
+weightInput.addEventListener('calciteSelectChange', (evt: any) => {
+  console.log(evt);
   currentFont.weight = weightInput.selectedOption.value;
   enableUpdateBtn();
 });
 
-styleInput.addEventListener('calciteSelectChange', function() {
+styleInput.addEventListener('calciteSelectChange', (evt: any) => {
+  console.log(evt);
   currentFont.style = styleInput.selectedOption.value;
   enableUpdateBtn();
 });

@@ -2,7 +2,7 @@
 
 This Typescript application was created to demonstrate how to edit `Graphics` with a `TextSymbol` using the ArcGIS API for JavaScript. This app utilized the `SketchViewModel` to allows users edit text for the `TextSymbol` by typing text into an [HTMLInputElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement).
 
-This application uses the Esri [calcite-components](https://github.com/Esri/calcite-components) to display a color picker using the [calcite-color](https://github.com/Esri/calcite-components/tree/master/src/components/calcite-color) component. It also utilizes the [calcite-select](https://github.com/Esri/calcite-components/tree/master/src/components/calcite-select) and the [calcite-accordion](https://github.com/Esri/calcite-components/tree/master/src/components/calcite-accordion) to create a user interface where a user can update the font size, weight, style, and family.
+This application uses the Esri [calcite-components](https://developers.arcgis.com/calcite-design-system/components/) to display a color picker using the [color-picker](https://developers.arcgis.com/calcite-design-system/components/color-picker/) component. It also utilizes the [calcite-select](https://developers.arcgis.com/calcite-design-system/components/select/) and the [calcite-accordion](https://developers.arcgis.com/calcite-design-system/components/accordion/) to create a user interface where a user can update the font size, weight, style, and family.
 
 A user can update existing text, text color, and text font by selecting a `Graphic`. Once a graphic is selected, the `SketchViewModel` fires the `update` event. An `Expand` widget expands to to display a `div` containing the calcite components. The app autopopulates the ui components with the values of the selected graphic. For example, the default color of the `calicte-color` will contain the color of the selected symbol.
 
@@ -38,9 +38,9 @@ The index.html file will be ready for deployment on a webserver, or just by doub
 
 ## Built With
 
-* [ArcGIS JavaScript API](https://developers.arcgis.com/javascript/) - Using the 4.18 JavaScript API
+* [ArcGIS JavaScript API](https://developers.arcgis.com/javascript/) - Using the 4.20 JavaScript API
 * [TypeScript](https://www.typescriptlang.org/)
-* [calcite-components](https://github.com/Esri/calcite-components)
+* [calcite-components](https://developers.arcgis.com/calcite-design-system/components/)
 
 ## Relevant API
 * MapView
@@ -48,8 +48,5 @@ The index.html file will be ready for deployment on a webserver, or just by doub
 * TextSymbol
 * GraphicsLayer
 * Graphic
-* calcite-color
-* calcite-accordion
-* calcite-select
 
 ## [Live Sample](https://banuelosj.github.io/jsapi-samples/typescript-samples/sketch-text-symbol-font-picker/)
