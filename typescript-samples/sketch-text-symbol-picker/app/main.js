@@ -69,7 +69,7 @@ define(["require", "exports", "tslib", "esri/Map", "esri/views/MapView", "esri/w
     drawTextBtn.onclick = function () {
         sketchViewModel.create("point");
     };
-    colorPicker.addEventListener('calciteColorChange', (evt) => {
+    colorPicker.addEventListener("calciteColorPickerChange", (evt) => {
         if (sketchViewModel.state === "active" &&
             sketchViewModel.updateGraphics.getItemAt(0).geometry.type === "point") {
             // a point graphic is being updated, so allow symbol to be updated

@@ -82,10 +82,11 @@ drawTextBtn.onclick = function () {
   sketchViewModel.create("point");
 };
 
-colorPicker.addEventListener('calciteColorChange', (evt: any) => {
+colorPicker.addEventListener("calciteColorPickerChange", (evt: any) => {
   if (
     sketchViewModel.state === "active" &&
-    sketchViewModel.updateGraphics.getItemAt(0).geometry.type === "point") {
+    sketchViewModel.updateGraphics.getItemAt(0).geometry.type === "point"
+  ) {
     // a point graphic is being updated, so allow symbol to be updated
     currentColor = evt.target.value;
 

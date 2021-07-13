@@ -2,7 +2,7 @@
 
 This Typescript application was created to demonstrate how to edit `Graphics` with a `TextSymbol` using the ArcGIS API for JavaScript. This app utilized the `SketchViewModel` to allows users to add points, and add text for the `TextSymbol` by typing text into an [HTMLInputElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement).
 
-This application uses the Esri [calcite-components](https://github.com/Esri/calcite-components) to display a color picker using the [calcite-color](https://github.com/Esri/calcite-components/tree/master/src/components/calcite-color) component.
+This application uses the Esri [calcite-components](https://developers.arcgis.com/calcite-design-system/components/) to display a color picker using the [color-picker](https://developers.arcgis.com/calcite-design-system/components/color-picker/) component.
 
 A user can update existing text and text color by selecting a `Graphic`. Once a graphic is selected, the `SketchViewModel` fires the `update` event. An `Expand` widget expands to to display a `div` containing the HTMLInputElement and the calcite-color component. A user is able to update the color of the existing graphic, or edit the color and text of a new graphic added to the map.
 
@@ -40,9 +40,9 @@ The index.html file will be ready for deployment on a webserver, or just by doub
 
 ## Built With
 
-* [ArcGIS JavaScript API](https://developers.arcgis.com/javascript/) - Using the 4.18 JavaScript API
+* [ArcGIS JavaScript API](https://developers.arcgis.com/javascript/) - Using the 4.20 JavaScript API
 * [TypeScript](https://www.typescriptlang.org/)
-* [calcite-components](https://github.com/Esri/calcite-components)
+* [calcite-components](https://developers.arcgis.com/calcite-design-system/components/)
 
 ## Relevant API
 * MapView
