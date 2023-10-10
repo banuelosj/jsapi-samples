@@ -4,7 +4,7 @@ This project uses the ArcGIS JavaScript API 4.x to test Utility Network snapping
 
 This application displays the rules table with all the rules in the utility network rules feature service in its own UI container. There is also a container that lists all the versions available to the logged in user to switch to, since we do not want to edit the default SDE version!
 
-<img src="snap-app.png" width="800"/>
+<img src="snap-app.png" />
 
 ## Live App
 
