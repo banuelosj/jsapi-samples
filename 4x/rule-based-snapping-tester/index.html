@@ -1,0 +1,127 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>
+      Rule Based Snapping Tester
+    </title>
+
+    <script type="module" src="https://jsdev.arcgis.com/calcite-components/1.7.0/calcite.esm.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://jsdev.arcgis.com/calcite-components/1.7.0/calcite.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://jsdev.arcgis.com/4.28/esri/themes/light/main.css"
+    />
+
+    <link rel="stylesheet" href="css/index.css" />
+
+    <script src="https://jsdev.arcgis.com/4.28/"></script>
+    <script src="js/main.js"></script>
+
+  </head>
+
+  <body>
+    <calcite-modal aria-labelledby="modal-title" id="webmap-modal" open>
+      <div slot="header" id="modal-title">
+        Load a WebMap
+      </div>
+      <div slot="content">
+        <calcite-label>
+          Portal Org
+          <calcite-input placeholder="https://sampleserver7.arcgisonline.com/portal" id="modal-org-input">
+          </calcite-input>
+        </calcite-label>
+        <calcite-label>
+          WebMap Id
+          <calcite-input placeholder="cff20b71fdae4b3393b530b0099e4390" id="modal-webmap-input">
+          </calcite-input>
+        </calcite-label>
+        <calcite-notice icon="exclamation-mark-triangle" width="full" id="modal-notice">
+          <div slot="message" id="notice-message"></div>
+        </calcite-notice>
+      </div>
+      <calcite-button slot="secondary" width="full" appearance="outline" id="modal-cancel-btn">
+        Cancel
+      </calcite-button>
+      <calcite-button slot="primary" width="full" id="modal-save-btn">
+        Save
+      </calcite-button>
+    </calcite-modal>
+
+    <calcite-shell content-behind>
+    
+      <calcite-shell-panel slot="panel-start" detached>
+        <calcite-action-bar slot="action-bar">
+          <calcite-action data-action-id="layers" icon="layers" text="Layers"></calcite-action>
+          <calcite-action data-action-id="legend" icon="legend" text="Legend"></calcite-action>
+          <calcite-action data-action-id="rules-table" icon="object-detection" text="Rules Table"></calcite-action>
+          <calcite-action data-action-id="data-management-panel" icon="map" text="Data Management"></calcite-action>
+          <calcite-action data-action-id="versions" icon="data" text="Versions" id="version-action-btn"></calcite-action>
+        </calcite-action-bar>
+    
+        <calcite-panel heading="Layers" data-panel-id="layers" hidden>
+          <div id="layers-container"></div>
+        </calcite-panel>
+        <calcite-panel heading="Legend" data-panel-id="legend" hidden>
+          <div id="legend-container"></div>
+        </calcite-panel>
+        <calcite-panel heading="UN Rules Table" data-panel-id="rules-table" hidden>
+          <calcite-input-text id="filterInput" placeholder="Filter rules"></calcite-input-text>
+          <calcite-list id="listEl">
+            <calcite-list-item label="RuleType"
+              description="From Asset Group | From Asset Type (connectivity policy) | To Asset Group | To Asset Type">
+            </calcite-list-item>
+          </calcite-list>
+        </calcite-panel>
+        <calcite-panel heading="Set WebMap" data-panel-id="data-management-panel" hidden>
+          <calcite-label class="top-space">
+            <calcite-tooltip-manager>
+              Portal Org (default ArcGIS Online)
+              <calcite-icon icon="question" id="help-icon" appearance="inline" scale="s"></calcite-icon>
+            </calcite-tooltip-manager>
+            <calcite-input placeholder="portal organization..." type="text" id="orgNameInput">
+            </calcite-input>
+          </calcite-label>
+          </calcite-label>
+          <calcite-label>
+            <calcite-tooltip-manager>
+              WebMap ID
+              <calcite-icon icon="question" id="id-help-icon" appearance="inline" scale="s"></calcite-icon>
+            </calcite-tooltip-manager>
+            <calcite-input placeholder="webmap id..." type="text" id="webmapIdInput">
+            </calcite-input>
+          </calcite-label>
+          <calcite-label>
+            <calcite-button id="updateBtn" disabled>Update</calcite-button>
+          </calcite-label>
+          </calcite-panel>
+          <calcite-tooltip reference-element="help-icon" placement="auto" offset-distance="6" offset-skidding="0"
+            aria-hidden="true" id="calcite-tooltip-7c47e001-bc71-4669-42e3-1dd87b10b65a" role="tooltip"
+            data-popper-placement="bottom"
+            class="help-tip"
+          >
+            <b>Enterprise:</b> https://machineName.domain.com/portal <br />
+            <b>ArcGIS Online:</b> https://www.arcgis.com
+          </calcite-tooltip>
+          <calcite-tooltip reference-element="id-help-icon" placement="auto" offset-distance="6" offset-skidding="0"
+            aria-hidden="true" id="calcite-tooltip-7c47e001-bc71-4669-42e3-1dd87b10b65b" role="tooltip"
+            data-popper-placement="bottom"
+            class="help-tip"
+          >
+            <b>Example: </b>83560846279c4df498ca72a09ed99c30
+          </calcite-tooltip>
+        </calcite-panel>
+        <calcite-panel heading="Versions" data-panel-id="versions" hidden>
+          <calcite-input-text id="versionsFilterInput" placeholder="Filter versions"></calcite-input-text>
+          <calcite-list id="versionListEl" selection-mode="single">
+          </calcite-list>
+        </calcite-panel>
+      </calcite-shell-panel>
+      <div id="viewDiv"></div>
+    </calcite-shell>
+  </body>
+</html>
