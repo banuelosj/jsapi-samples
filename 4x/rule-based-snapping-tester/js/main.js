@@ -125,22 +125,6 @@ require([
     updateBtn.disabled = false;
   });
 
-  // function setVersion(layers, version) {
-  //   layers.forEach((layer) => {
-  //     if(layer.type === "group") {
-  //       layer.layers.items.forEach((sublayer) => {
-  //         sublayer.gdbVersion = version;
-  //       });
-  //     }
-  //     if(layer.type === "feature") {
-  //       layer.gdbVersion = version;
-  //     }
-  //     if (layer.type === "subtype-group") {
-  //       layer.gdbVersion = version;
-  //     }
-  //   });
-  // }
-
   function handleActionBarClick({ target }) {
     if (target.tagName !== "CALCITE-ACTION") {
       return;
@@ -322,9 +306,10 @@ require([
     }
   }
 
-  function handleVersionChange(evt) {
+  async function handleVersionChange(evt) {
     const { selectedItems } = evt.target;
-    changeVersion(webmap, { name: selectedItems[0].value, guid: selectedItems[0].description}, currentVersionIdentifier);
+    const newVersionIdentifier = await vms.getVersionIdentifierFromName(selectedItems[0].value);
+    changeVersion(webmap, newVersionIdentifier, currentVersionIdentifier);
   }
 
   async function changeVersion(map, newVersion, currentVersion) {
