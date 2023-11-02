@@ -24,6 +24,8 @@ require([
   let editor;
   let view;
   let fs, vms;
+  let webmap;
+  let currentVersionIdentifier = null;
 
   document.querySelector(`[data-action-id=layers]`).active = true;
   document.querySelector(`[data-panel-id=layers]`).hidden = false;
@@ -36,7 +38,7 @@ require([
     webMapId = document.getElementById("modal-webmap-input").value;
 
     let orgId = !portalOrg ? "https://arcgis.com" : portalOrg;
-    const webmap = new WebMap({
+    webmap = new WebMap({
       portalItem: {
         portal: {
           url: orgId
@@ -69,7 +71,9 @@ require([
       editor.snappingOptions.featureEnabled = true;
       enableSnappingOnLayers(view.map.editableLayers.items);
  
-      loadFSAndVMS(view.map.editableLayers.items);
+      // grabbing the first layer
+      // not ideal, might need to update this later
+      loadFSAndVMS(view.map.editableLayers.items[0]);
 
       // Check if webmap contains utility networks.
       if (webmap?.utilityNetworks?.length > 0) {
@@ -121,21 +125,21 @@ require([
     updateBtn.disabled = false;
   });
 
-  function setVersion(layers, version) {
-    layers.forEach((layer) => {
-      if(layer.type === "group") {
-        layer.layers.items.forEach((sublayer) => {
-          sublayer.gdbVersion = version;
-        });
-      }
-      if(layer.type === "feature") {
-        layer.gdbVersion = version;
-      }
-      if (layer.type === "subtype-group") {
-        layer.gdbVersion = version;
-      }
-    });
-  }
+  // function setVersion(layers, version) {
+  //   layers.forEach((layer) => {
+  //     if(layer.type === "group") {
+  //       layer.layers.items.forEach((sublayer) => {
+  //         sublayer.gdbVersion = version;
+  //       });
+  //     }
+  //     if(layer.type === "feature") {
+  //       layer.gdbVersion = version;
+  //     }
+  //     if (layer.type === "subtype-group") {
+  //       layer.gdbVersion = version;
+  //     }
+  //   });
+  // }
 
   function handleActionBarClick({ target }) {
     if (target.tagName !== "CALCITE-ACTION") {
@@ -187,6 +191,7 @@ require([
       // select default version
       if (vms.defaultVersionIdentifier.name === versionIdentifier.name) {
         listItem.selected = true;
+        currentVersion = vms.defaultVersionIdentifier;
       }
       versionList.append(listItem);
     }); 
@@ -249,7 +254,7 @@ require([
 
     let orgId = !portalOrg ? "https://arcgis.com" : portalOrg;
 
-    const wm = new WebMap({
+    webmap = new WebMap({
       portalItem: {
         id: webMapId,
         portal: {
@@ -258,26 +263,26 @@ require([
       }
     });
 
-    await wm.load();
-    view.map = wm;
+    await webmap.load();
+    view.map = webmap;
 
     reactiveUtils.watch(
       () => !view.updating,
       () => {
         view.goTo(view.map.initialViewProperties.viewpoint.targetGeometry)
         addEditor(view.map.editableLayers.items);
-        loadFSAndVMS(view.map.editableLayers.items);
+        loadFSAndVMS(view.map.editableLayers.items[0]);
       }, { once: true }
     );
 
     updateBtn.disabled = true;
 
     // Check if webmap contains utility networks.
-    if (wm.utilityNetworks?.length > 0) {
+    if (webmap.utilityNetworks?.length > 0) {
       //setVersion(view.map.layers.items, MY_VERSION);
 
       // Assigns the utility network at index 0 to utilityNetwork. 
-      utilityNetwork = wm.utilityNetworks.getItemAt(0);
+      utilityNetwork = webmap.utilityNetworks.getItemAt(0);
 
       // Triggers the loading of the UtilityNetwork instance.
       await utilityNetwork.load();
@@ -300,31 +305,31 @@ require([
     enableSnappingOnLayers(editableLayers);
   }
 
-  async function loadFSAndVMS(layers) {
-    // grabbing the first layer
-    // not ideal, might need to update this later
-    const fsUrl = layers[0].url;
-    fs = new FeatureService({ url: fsUrl });
-    await fs.load();
-    if(fs.versionManagementServiceUrl) {
-      vms = new VersionManagementService({ url: fs.versionManagementServiceUrl });
-      await vms.load();
-      let versionInfos = await vms.getVersionInfos();
-      displayVersionsInPanel(versionInfos)
+  async function loadFSAndVMS(layer) {
+    const { url } = layer;
+    if(!!url) { 
+      fs = new FeatureService({ url: url });
+      await fs.load();
+
+      if(fs.versionManagementServiceUrl) {
+        vms = new VersionManagementService({ url: fs.versionManagementServiceUrl });
+        await vms.load();
+
+        currentVersionIdentifier = vms.defaultVersionIdentifier;
+        let versionInfos = await vms.getVersionInfos();
+        displayVersionsInPanel(versionInfos)
+      }
     }
   }
 
   function handleVersionChange(evt) {
     const { selectedItems } = evt.target;
-    setVersion(selectedItems[0].value);
+    changeVersion(webmap, { name: selectedItems[0].value, guid: selectedItems[0].description}, currentVersionIdentifier);
   }
 
-  function setVersion(gdbName) {
-    view.map.editableLayers.items.forEach((layer) => {
-      if (layer.type === "feature" || layer.type === "subtype-group") {
-        layer.gdbVersion = gdbName;
-      }
-    });
+  async function changeVersion(map, newVersion, currentVersion) {
+    await vms.changeVersion(map, currentVersion, newVersion);
+    currentVersionIdentifier = newVersion;
   }
 
   function enableSnappingOnLayers(layers) {
