@@ -26,6 +26,7 @@ require([
   let fs, vms;
   let webmap;
   let currentVersionIdentifier = null;
+  let currentListItemNode;
 
   document.querySelector(`[data-action-id=layers]`).active = true;
   document.querySelector(`[data-panel-id=layers]`).hidden = false;
@@ -114,7 +115,22 @@ require([
   const webmapIdInput = document.getElementById("webmapIdInput");
   const updateBtn = document.getElementById("updateBtn");
   updateBtn.onclick = () => { updateWebMap() };
-  const versionActionBtn = document.getElementById("version-action-btn")
+  const versionActionBtn = document.getElementById("version-action-btn");
+  const createVersionFabBtn = document.getElementById("create-version-fab-btn");
+  createVersionFabBtn.addEventListener("click", displayCreateVersionFlow);
+  const versionFlow = document.getElementById("version-create-flow-item");
+  versionFlow.addEventListener("calciteFlowItemBack", resetInputs);
+  const createVersionFlowBackBtn = document.getElementById("create-version-flow-back-btn");
+  createVersionFlowBackBtn.addEventListener("click", goBack);
+  const createVersionFlowBtn = document.getElementById("create-version-flow-btn");
+  createVersionFlowBtn.addEventListener("click", createVersion);
+  const versionInputName = document.getElementById("version-name-input");
+  const versionInputDescription = document.getElementById("version-description-input");
+  const deleteNotice = document.getElementById("delete-notice");
+  const deleteNoticeCancelBtn = document.getElementById("delete-notice-cancel-btn");
+  deleteNoticeCancelBtn.addEventListener("click", cancelDeleteNotice);
+  const deleteNoticeDeleteBtn = document.getElementById("delete-notice-delete-btn");
+  deleteNoticeDeleteBtn.addEventListener("click", deleteVersion);
 
   // input event listening
   orgNameInput.addEventListener('calciteInputInput', (evt) => {
@@ -176,6 +192,13 @@ require([
       if (vms.defaultVersionIdentifier.name === versionIdentifier.name) {
         listItem.selected = true;
         currentVersion = vms.defaultVersionIdentifier;
+      } else {
+        // cannot delete sde.DEFAULT so do not add trash delete button
+        const deleteBtn = document.createElement("calcite-action");
+        deleteBtn.slot = "actions-end";
+        deleteBtn.icon = "trash";
+        deleteBtn.addEventListener("click", handleVersionDeleteBtn);
+        listItem.appendChild(deleteBtn);
       }
       versionList.append(listItem);
     }); 
@@ -321,6 +344,70 @@ require([
     layers.forEach((layer) => {
       editor.snappingOptions.featureSources.push({ layer, enabled: true });
     });
+  }
+
+  // version creation
+  function displayCreateVersionFlow() {
+    flow.append(versionFlow);
+    versionFlow.closed = false;
+  }
+  
+  function goBack() {
+    document.getElementById("flow").back();
+    resetInputs();
+  }
+  
+  function createVersion(evt) {
+    console.log("versionInputName: ", versionInputName.value);
+    console.log("versionInputDescriptioN: ", versionInputDescription.value);
+    //goBack();
+    vms.createVersion({
+      versionName: versionInputName.value,
+      description: versionInputDescription.value,
+      access: "public"
+    }).then(async () => {
+      let versionInfos = await vms.getVersionInfos();
+      displayVersionsInPanel(versionInfos)
+      goBack();
+    }).catch((err) => {
+      console.log("failed to create version with: ", err);
+    });
+  }
+  
+  function resetInputs() {
+    versionInputName.value = "";
+    versionInputDescription.value = "";
+  }
+  
+  async function handleVersionDeleteBtn(evt) {
+    deleteNotice.open = true;
+    versionList.disabled = true;
+    currentListItemNode = evt.target.parentNode;
+  }
+  
+  function cancelDeleteNotice() {
+    versionList.disabled = false;
+    deleteNotice.open = false;
+  }
+  
+  async function deleteVersion() {
+    const versionIdentifierToDelete = await vms.getVersionIdentifierFromName(currentListItemNode.value);
+    // delete version
+    // Note: We shouldn't allow people to delete the current version that they are on.
+    // For now we switch the user to sde.DEFAULT if the current version matches the version they are trying
+    // to delete.
+    // TODO: Prevent users from deleting current version, but not switching to sde.Default
+    if(versionIdentifierToDelete.name === currentVersionIdentifier.name) {
+      // trying to delete current version, so switch the version to sde.DEFAULT first
+      // before deleting
+      currentVersionIdentifier = vms.defaultVersionIdentifier;
+      versionList.children[0].selected = true;
+    }
+    // prompt to confirm if they want to delete this version
+    //vms.deleteVersion(versionIdentifierToDelete);
+    versionList.removeChild(currentListItemNode);
+    versionList.disabled = false;
+    deleteNotice.open = false;
   }
   
 });

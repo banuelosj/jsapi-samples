@@ -116,11 +116,50 @@
           </calcite-tooltip>
         </calcite-panel>
         <calcite-panel heading="Versions" data-panel-id="versions" hidden>
-          <calcite-input-text id="versionsFilterInput" placeholder="Filter versions"></calcite-input-text>
-          <calcite-list id="versionListEl" selection-mode="single">
-          </calcite-list>
+          <calcite-flow id="flow">
+            <calcite-flow-item>
+              <calcite-input-text id="versionsFilterInput" placeholder="Filter versions"></calcite-input-text>
+              <calcite-list id="versionListEl" selection-mode="single"></calcite-list>
+              <calcite-fab text-enabled text="New version" slot="fab" id="create-version-fab-btn"></calcite-fab>
+              <calcite-notice icon="exclamation-mark-triangle" id="delete-notice" slot="footer" kind="warning">
+                <div slot="title">Deleting a version!</div>
+                <div slot="message">Are you sure you want to delete this version? This version cannot be recovered after deletion.
+                </div>
+                <div slot="link">
+                  <calcite-button text="Delete" appearance="outline" id="delete-notice-cancel-btn">Cancel</calcite-button>
+                  <calcite-button text="Delete" id="delete-notice-delete-btn">Delete</calcite-button>
+                </div>
+              </calcite-notice>
+            </calcite-flow-item>
+          </calcite-flow>
         </calcite-panel>
       </calcite-shell-panel>
+      <!-- create version flow item -->
+      <calcite-flow-item heading="Create version" class="flow-item-container" id="version-create-flow-item" closed>
+        <calcite-label class="flow-item-label">
+          Name
+          <calcite-input id="version-name-input"></calcite-input>
+        </calcite-label>
+        <calcite-label class="flow-item-label">
+          Description
+          <calcite-input type="textarea" id="version-description-input"></calcite-input>
+        </calcite-label>
+        <calcite-label class="flow-item-label">
+          Access
+          <div>
+            <calcite-button round>Public</calcite-button>
+            <calcite-button kind="neutral" round>Protected</calcite-button>
+            <calcite-button kind="neutral" round>Private</calcite-button>
+          </div>
+        </calcite-label>
+        <calcite-button slot="footer" width="half" appearance="outline" id="create-version-flow-back-btn">
+          Back
+        </calcite-button>
+        <calcite-button slot="footer" width="half" appearance="solid" id="create-version-flow-btn">
+          Create
+        </calcite-button>
+      </calcite-flow-item>
+      <!-- create version flow item -->
       <div id="viewDiv"></div>
     </calcite-shell>
   </body>
