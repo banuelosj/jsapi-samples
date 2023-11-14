@@ -6,7 +6,8 @@ require([
   "esri/widgets/Legend",
   "esri/core/reactiveUtils",
   "esri/versionManagement/VersionManagementService",
-  "esri/rest/featureService/FeatureService"
+  "esri/rest/featureService/FeatureService",
+  "esri/config",
 ], function(
   WebMap,
   MapView,
@@ -15,7 +16,8 @@ require([
   Legend,
   reactiveUtils,
   VersionManagementService,
-  FeatureService
+  FeatureService,
+  esriConfig
 ) {
 
   let utilityNetwork, rulesTable;
@@ -67,6 +69,18 @@ require([
 
     view.when(async () => {
       await view.map.loadAll();
+      // DELETE: temp interceptor for testing
+      esriConfig.request.interceptors.push(
+        {
+          urls: view.map.editableLayers.items[0].url,
+          after: async (response) => {
+            if(response.data.currentVersion && response.data.currentVersion === 11.1) {
+              response.data.currentVersion = "11.2";
+            }
+
+          }
+        }
+      );
 
       editor.snappingOptions.enabled = true;
       editor.snappingOptions.featureEnabled = true;
@@ -357,10 +371,11 @@ require([
     resetInputs();
   }
   
+  // defaulting to public access
+  // TODO: Get the access UI working 
   function createVersion(evt) {
     console.log("versionInputName: ", versionInputName.value);
     console.log("versionInputDescriptioN: ", versionInputDescription.value);
-    //goBack();
     vms.createVersion({
       versionName: versionInputName.value,
       description: versionInputDescription.value,
