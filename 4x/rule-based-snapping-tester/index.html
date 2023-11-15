@@ -160,6 +160,32 @@
         </calcite-button>
       </calcite-flow-item>
       <!-- create version flow item -->
+      <!-- alter version flow item -->
+      <calcite-flow-item heading="Alter version" class="flow-item-container" id="version-alter-flow-item" closed>
+        <calcite-label class="flow-item-label">
+          Name
+          <calcite-input id="alter-version-name-input"></calcite-input>
+        </calcite-label>
+        <calcite-label class="flow-item-label">
+          Description
+          <calcite-input type="textarea" id="alter-version-description-input"></calcite-input>
+        </calcite-label>
+        <calcite-label class="flow-item-label">
+          Access
+          <div>
+            <calcite-button round>Public</calcite-button>
+            <calcite-button kind="neutral" round>Protected</calcite-button>
+            <calcite-button kind="neutral" round>Private</calcite-button>
+          </div>
+        </calcite-label>
+        <calcite-button slot="footer" width="half" appearance="outline" id="alter-version-flow-back-btn">
+          Cancel
+        </calcite-button>
+        <calcite-button slot="footer" width="half" appearance="solid" id="alter-version-flow-btn" disabled>
+          Update
+        </calcite-button>
+      </calcite-flow-item>
+      <!-- alter version flow item -->
       <div id="viewDiv"></div>
     </calcite-shell>
   </body>

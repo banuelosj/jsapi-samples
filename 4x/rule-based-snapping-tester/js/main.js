@@ -20,6 +20,20 @@ require([
   esriConfig
 ) {
 
+  /***
+   * TODO:
+   * 1. Set access buttons based of version access 
+   * 2. Add event listener for version access buttons on version creation
+   * 3. Alter a version - X
+   * 4. Reconcile
+   * 5. Post
+   * 6. Editing Session (start/stop reading/editing save/discard edits)
+   * 7. Undo / Redo
+   * 8. View Associations Widget
+   * 9. Validate Network Topology Widget
+   * 10. Utility Network Trace widget
+   * 11. Sorting version list view
+   */
   let utilityNetwork, rulesTable;
   let activeWidget;
   let portalOrg, webMapId;
@@ -29,6 +43,9 @@ require([
   let webmap;
   let currentVersionIdentifier = null;
   let currentListItemNode;
+  let originalList = null;
+  let originalVersionList = null;
+    let versionIdentifierToAlter = null;
 
   document.querySelector(`[data-action-id=layers]`).active = true;
   document.querySelector(`[data-panel-id=layers]`).hidden = false;
@@ -74,7 +91,7 @@ require([
         {
           urls: view.map.editableLayers.items[0].url,
           after: async (response) => {
-            if(response.data.currentVersion && response.data.currentVersion === 11.1) {
+            if(response.data.currentVersion && response.data.currentVersion < 11.2) {
               response.data.currentVersion = "11.2";
             }
 
@@ -116,11 +133,10 @@ require([
   
   document.querySelector("calcite-action-bar").addEventListener("click", handleActionBarClick);
   document.querySelector("calcite-shell").hidden = false;
+
   const list = document.getElementById("listEl");
   const versionList = document.getElementById("versionListEl");
   versionList.addEventListener("calciteListChange", handleVersionChange)
-  let originalList = null;
-  let originalVersionList = null;
   const filterInput = document.getElementById("filterInput");
   filterInput.addEventListener("calciteInputTextInput", handleInputFilter);
   const versionsFilterInput = document.getElementById("versionsFilterInput");
@@ -129,22 +145,33 @@ require([
   const webmapIdInput = document.getElementById("webmapIdInput");
   const updateBtn = document.getElementById("updateBtn");
   updateBtn.onclick = () => { updateWebMap() };
+
   const versionActionBtn = document.getElementById("version-action-btn");
   const createVersionFabBtn = document.getElementById("create-version-fab-btn");
   createVersionFabBtn.addEventListener("click", displayCreateVersionFlow);
   const versionFlow = document.getElementById("version-create-flow-item");
   versionFlow.addEventListener("calciteFlowItemBack", resetInputs);
+  const deleteNotice = document.getElementById("delete-notice");
+  const deleteNoticeCancelBtn = document.getElementById("delete-notice-cancel-btn");
+  deleteNoticeCancelBtn.addEventListener("click", cancelDeleteNotice);
+  const deleteNoticeDeleteBtn = document.getElementById("delete-notice-delete-btn");
+  deleteNoticeDeleteBtn.addEventListener("click", deleteVersion);
+  // create version
   const createVersionFlowBackBtn = document.getElementById("create-version-flow-back-btn");
   createVersionFlowBackBtn.addEventListener("click", goBack);
   const createVersionFlowBtn = document.getElementById("create-version-flow-btn");
   createVersionFlowBtn.addEventListener("click", createVersion);
   const versionInputName = document.getElementById("version-name-input");
   const versionInputDescription = document.getElementById("version-description-input");
-  const deleteNotice = document.getElementById("delete-notice");
-  const deleteNoticeCancelBtn = document.getElementById("delete-notice-cancel-btn");
-  deleteNoticeCancelBtn.addEventListener("click", cancelDeleteNotice);
-  const deleteNoticeDeleteBtn = document.getElementById("delete-notice-delete-btn");
-  deleteNoticeDeleteBtn.addEventListener("click", deleteVersion);
+  // alter version
+  const alterVersionFlowItem = document.getElementById("version-alter-flow-item");
+  alterVersionFlowItem.addEventListener("calciteFlowItemBack", resetAlterInputs);
+  const versionAlterInputName = document.getElementById("alter-version-name-input");
+  versionAlterInputName.addEventListener("calciteInputInput", handleAlterInputNameChange);
+  const versionAlterInputDescription = document.getElementById("alter-version-description-input");
+  versionAlterInputDescription.addEventListener("calciteInputInput", handleAlterInputDescriptionChange);
+  const alterUpdateBtn = document.getElementById("alter-version-flow-btn");
+  alterUpdateBtn.addEventListener("click", alterVersion);
 
   // input event listening
   orgNameInput.addEventListener('calciteInputInput', (evt) => {
@@ -207,6 +234,12 @@ require([
         listItem.selected = true;
         currentVersion = vms.defaultVersionIdentifier;
       } else {
+        // cannot alter sde.DEFAULT so do not add pencil alter button
+        const alterBtn = document.createElement("calcite-action");
+        alterBtn.slot = "actions-end";
+        alterBtn.icon = "pencil";
+        alterBtn.addEventListener("click", handleVersionAlterBtn);
+        listItem.appendChild(alterBtn);
         // cannot delete sde.DEFAULT so do not add trash delete button
         const deleteBtn = document.createElement("calcite-action");
         deleteBtn.slot = "actions-end";
@@ -365,6 +398,13 @@ require([
     flow.append(versionFlow);
     versionFlow.closed = false;
   }
+
+  // alter version
+  function displayAlterVersionFlow(access, description, name) {
+    setFlowInputValues(access, description, name);
+    flow.append(alterVersionFlowItem);
+    alterVersionFlowItem.closed = false;
+  }
   
   function goBack() {
     document.getElementById("flow").back();
@@ -393,6 +433,11 @@ require([
     versionInputName.value = "";
     versionInputDescription.value = "";
   }
+
+  function resetAlterInputs() {
+    versionAlterInputName.value = "";
+    versionAlterInputDescription.value = "";
+  }
   
   async function handleVersionDeleteBtn(evt) {
     deleteNotice.open = true;
@@ -419,10 +464,47 @@ require([
       versionList.children[0].selected = true;
     }
     // prompt to confirm if they want to delete this version
-    //vms.deleteVersion(versionIdentifierToDelete);
+    vms.deleteVersion(versionIdentifierToDelete);
     versionList.removeChild(currentListItemNode);
     versionList.disabled = false;
     deleteNotice.open = false;
+  }
+
+  async function handleVersionAlterBtn(evt) {
+    versionIdentifierToAlter = await vms.getVersionIdentifierFromGuid(evt.target.parentNode.description);
+    const { access, description, versionIdentifier } = await vms.getVersionInfoExtended(versionIdentifierToAlter);
+    displayAlterVersionFlow(access, description, versionIdentifier.name);
+  }
+
+  function setFlowInputValues(access, description, name) {
+    const indexOfFirst = name.indexOf('.');
+    name = name.slice(indexOfFirst + 1);
+    
+    versionAlterInputName.value = name;
+    versionAlterInputDescription.value = description;
+  }
+  
+  function handleAlterInputNameChange(evt) {
+    alterUpdateBtn.disabled = false;
+  }
+  
+  function handleAlterInputDescriptionChange(evt) {
+    alterUpdateBtn.disabled = false;
+  }
+
+  function alterVersion() {
+    vms.alterVersion(versionIdentifierToAlter, {
+      versionName: versionAlterInputName.value,
+      description: versionAlterInputDescription.value
+    }).then(async (response) => {
+      console.log("successfully altered version");
+      let versionInfos = await vms.getVersionInfos();
+      displayVersionsInPanel(versionInfos)
+      goBack();
+      alterUpdateBtn.disabled = true;
+    }).catch((err) => {
+      console.log("failed to alter version: ", err);
+    });
   }
   
 });
