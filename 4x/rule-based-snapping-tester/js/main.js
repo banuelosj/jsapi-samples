@@ -173,6 +173,30 @@ require([
   const alterUpdateBtn = document.getElementById("alter-version-flow-btn");
   alterUpdateBtn.addEventListener("click", alterVersion);
 
+  // session management
+  const startEditingBtn = document.getElementById("start-editing-flow-btn");
+  startEditingBtn.addEventListener("click", startEditSession);
+  const stopEditingBtn = document.getElementById("stop-editing-flow-btn");
+  stopEditingBtn.addEventListener("click", stopEditSession);
+
+  // save revert
+  const saveRevertNotice =  document.getElementById("save-revert-notice");
+  const revertBtn = document.getElementById("revert-notice-btn");
+  revertBtn.addEventListener("click", stopEditingRevertEdits);
+  const saveBtn = document.getElementById("save-notice-btn");
+  saveBtn.addEventListener("click", stopEditingSaveEdits);
+  
+  // undo redo
+  const undoBtn =  document.getElementById("undo");
+  const redoBtn = document.getElementById("redo");
+  undoBtn.addEventListener("click", undo);
+  redoBtn.addEventListener("click", redo);
+
+  // reconcile post
+  const reconcileBtn =  document.getElementById("reconcile");
+  const postBtn = document.getElementById("post");
+  reconcileBtn.addEventListener("click", undo);
+  postBtn.addEventListener("click", redo);
   // input event listening
   orgNameInput.addEventListener('calciteInputInput', (evt) => {
     updateBtn.disabled = false;
@@ -506,5 +530,70 @@ require([
       console.log("failed to alter version: ", err);
     });
   }
-  
+    async function startReading() {
+    await vms.startReading(currentVersionIdentifier).then(async (response) => {
+      console.log("successfully started reading version");
+    }).catch((err) => {
+      console.log("failed to start reading: ", err);
+    });
+  }
+  async function stopReading() {
+    await vms.stopReading(currentVersionIdentifier).then(async (response) => {
+      console.log("successfully stopped reading version");
+    }).catch((err) => {
+      console.log("failed to stop reading: ", err);
+    });
+  }
+  async function startEditing() {
+    await vms.startEditing(currentVersionIdentifier).then(async (response) => {
+      console.log("successfully started editing version");
+    }).catch((err) => {
+      console.log("failed to start editing: ", err);
+    });
+  }
+  async function stopEditingSaveEdits() {
+    await vms.stopEditing(currentVersionIdentifier, true).then(async (response) => {
+      console.log("successfully stopped editing version");
+      saveRevertNotice.open = false;
+      await stopReading();
+      startEditingBtn.disabled = false;
+      stopEditingBtn.disabled = true;
+    }).catch((err) => {
+      console.log("failed to stop editing: ", err);
+    });
+  }
+  async function stopEditingRevertEdits() {
+    await vms.stopEditing(currentVersionIdentifier,false).then(async (response) => {
+      console.log("successfully stopped editing version");
+      saveRevertNotice.open = false;
+      await stopReading();
+      startEditingBtn.disabled = false;
+      stopEditingBtn.disabled = true;
+    }).catch((err) => {
+      console.log("failed to stop editing: ", err);
+    });
+  }
+  async function startEditSession(){
+    await startReading();
+    await startEditing();
+    startEditingBtn.disabled = true;
+    stopEditingBtn.disabled = false;
+  }
+  async function stopEditSession(){
+    saveRevertNotice.open = true;
+  }
+  async function undo() {
+    await vms.undo(currentVersionIdentifier).then(async (response) => {
+      console.log("successfully stopped editing version");
+    }).catch((err) => {
+      console.log("failed to stop editing: ", err);
+    });
+  }
+  async function redo() {
+    await vms.redo(currentVersionIdentifier).then(async (response) => {
+      console.log("successfully stopped editing version");
+    }).catch((err) => {
+      console.log("failed to stop editing: ", err);
+    });
+  }
 });

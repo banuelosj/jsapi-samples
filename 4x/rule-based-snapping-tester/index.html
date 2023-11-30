@@ -61,6 +61,8 @@
           <calcite-action data-action-id="rules-table" icon="object-detection" text="Rules Table"></calcite-action>
           <calcite-action data-action-id="data-management-panel" icon="map" text="Data Management"></calcite-action>
           <calcite-action data-action-id="versions" icon="data" text="Versions" id="version-action-btn"></calcite-action>
+          <calcite-action data-action-id="session-management" icon="data" text="sessionManagement"></calcite-action>
+          <calcite-action data-action-id="reconcile-post" icon="data" text="Reconcile and Post"></calcite-action>
         </calcite-action-bar>
     
         <calcite-panel heading="Layers" data-panel-id="layers" hidden>
@@ -133,6 +135,37 @@
             </calcite-flow-item>
           </calcite-flow>
         </calcite-panel>
+
+        <calcite-panel heading="Session Management" data-panel-id="session-management" hidden>
+          <calcite-flow id="flow">
+            <calcite-flow-item>
+              <calcite-button id="start-editing-flow-btn" >Start Edit Session</calcite-button>
+              <calcite-button id="stop-editing-flow-btn" disabled >Stop Edit Session</calcite-button>
+              <calcite-button id="undo">Undo</calcite-button>
+              <calcite-button id="redo">Redo</calcite-button>
+              <calcite-notice icon="exclamation-mark-triangle" id="save-revert-notice" slot="footer" kind="warning">
+                <div slot="title">Save or Revert changes!</div>
+                <div slot="message">Saving edits will save all edits to current version. Reverting will discard all edits in this edit session.
+                </div>
+                <div slot="link">
+                  <calcite-button text="Revert" appearance="outline" id="revert-notice-btn">Revert</calcite-button>
+                  <calcite-button text="Save" id="save-notice-btn">Save</calcite-button>
+                </div>
+              </calcite-notice>
+            </calcite-flow-item>
+          </calcite-flow>
+        </calcite-panel>
+          <!-- reconcile and post flow item -->
+          <calcite-panel heading="Reconcile and Post" data-panel-id="reconcile-post" hidden>
+            <calcite-flow id="flow">
+              <calcite-flow-item>
+                <calcite-button id="reconcile">reconcile</calcite-button>
+                <calcite-button id="post" disabled>post</calcite-button>
+              </calcite-flow-item>
+            </calcite-flow>
+          </calcite-panel>
+         <!-- Session Managment -->
+       
       </calcite-shell-panel>
       <!-- create version flow item -->
       <calcite-flow-item heading="Create version" class="flow-item-container" id="version-create-flow-item" closed>
