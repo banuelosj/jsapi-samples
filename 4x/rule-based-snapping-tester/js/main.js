@@ -133,6 +133,7 @@ require([
   
   document.querySelector("calcite-action-bar").addEventListener("click", handleActionBarClick);
   document.querySelector("calcite-shell").hidden = false;
+  const buttonsThatNeedToBeReenabled = [];
 
   const list = document.getElementById("listEl");
   const versionList = document.getElementById("versionListEl");
@@ -193,10 +194,15 @@ require([
   redoBtn.addEventListener("click", redo);
 
   // reconcile post
+  const reconcileNotice =  document.getElementById("by-Atrribute-by-object-notice");
   const reconcileBtn =  document.getElementById("reconcile");
+  const reconcileByAttributeBtn =  document.getElementById("by-attribute");
+  const reconcileByObjectBtn =  document.getElementById("by-object");
   const postBtn = document.getElementById("post");
-  reconcileBtn.addEventListener("click", undo);
-  postBtn.addEventListener("click", redo);
+  reconcileBtn.addEventListener("click", () => reconcileNotice.open = true);
+  postBtn.addEventListener("click", post);
+  reconcileByAttributeBtn.addEventListener("click", reconcileByAttribute);
+  reconcileByObjectBtn.addEventListener("click", reconcileByObject);
   // input event listening
   orgNameInput.addEventListener('calciteInputInput', (evt) => {
     updateBtn.disabled = false;
@@ -574,10 +580,13 @@ require([
     });
   }
   async function startEditSession(){
-    await startReading();
-    await startEditing();
+    document.body.style.cursor='wait';
     startEditingBtn.disabled = true;
     stopEditingBtn.disabled = false;
+    await blockButtonInput()
+    await startReading();
+    await startEditing();
+    await returnButtonsToPreviousState()
   }
   async function stopEditSession(){
     saveRevertNotice.open = true;
@@ -595,5 +604,53 @@ require([
     }).catch((err) => {
       console.log("failed to stop editing: ", err);
     });
+  }
+  async function reconcileByAttribute() {
+    await vms.reconcile(currentVersionIdentifier, {conflictDetection: "by-attribute"}).then(async (response) => {
+      console.log("successfully reconciled version");
+      reconcileNotice.open = false;
+    }).catch((err) => {
+      console.log("failed to reconcile version: ", err);
+    });
+  }
+  async function reconcileByObject() {
+    await vms.reconcile(currentVersionIdentifier, {conflictDetection: "by-object"}).then(async (response) => {
+      console.log("successfully reconciled version");
+      reconcileNotice.open = false;
+    }).catch((err) => {
+      console.log("failed to reconcile version: ", err);
+    });
+  }
+  async function post() {
+    await vms.post(currentVersionIdentifier).then(async (response) => {
+      console.log("post operation wass successful");
+    }).catch((err) => {
+      console.log("failed to post version changes: ", err);
+    });
+  }
+  async function blockButtonInput(){
+   const buttons = document.querySelectorAll('calcite-button');
+   const calciteAction = document.querySelectorAll('calcite-action');
+   editor.visible = false;
+   for (let i = 0; i < calciteAction.length; i++) 
+      calciteAction[i].disabled = true;
+ 
+   // Disable all buttons
+   for (let i = 0; i < buttons.length; i++) {
+   if(!buttons[i].disabled){
+     buttonsThatNeedToBeReenabled.push(i);
+     buttons[i].disabled = true;
+   }
+}
+  }
+  async function returnButtonsToPreviousState(){
+    const buttons = document.querySelectorAll('calcite-button');
+    const calciteAction = document.querySelectorAll('calcite-action');
+    for (let i = 0; i < buttonsThatNeedToBeReenabled.length; i++) 
+        buttons[buttonsThatNeedToBeReenabled[i]].disabled = false;
+    for (let i = 0; i < calciteAction.length; i++) 
+          calciteAction[i].disabled = false;
+    editor.visible = true;
+    document.body.style.cursor='default';
   }
 });

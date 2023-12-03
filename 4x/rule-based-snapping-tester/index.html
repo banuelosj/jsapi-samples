@@ -137,7 +137,7 @@
         </calcite-panel>
 
         <calcite-panel heading="Session Management" data-panel-id="session-management" hidden>
-          <calcite-flow id="flow">
+          <calcite-flow id="sm">
             <calcite-flow-item>
               <calcite-button id="start-editing-flow-btn" >Start Edit Session</calcite-button>
               <calcite-button id="stop-editing-flow-btn" disabled >Stop Edit Session</calcite-button>
@@ -157,10 +157,17 @@
         </calcite-panel>
           <!-- reconcile and post flow item -->
           <calcite-panel heading="Reconcile and Post" data-panel-id="reconcile-post" hidden>
-            <calcite-flow id="flow">
+            <calcite-flow id="rp">
               <calcite-flow-item>
                 <calcite-button id="reconcile">reconcile</calcite-button>
                 <calcite-button id="post" disabled>post</calcite-button>
+                <calcite-notice icon="exclamation-mark-triangle" id="by-Atrribute-by-object-notice" slot="footer" kind="warning">
+                  <div slot="title">Would you like to reconcile by attribute or by object</div>
+                  <div slot="link">
+                    <calcite-button text="By Attribute" id="by-attribute">By Attribute</calcite-button>
+                    <calcite-button text="By Object" id="by-object">By Object</calcite-button>
+                  </div>
+                </calcite-notice>
               </calcite-flow-item>
             </calcite-flow>
           </calcite-panel>
