@@ -61,8 +61,9 @@
           <calcite-action data-action-id="rules-table" icon="object-detection" text="Rules Table"></calcite-action>
           <calcite-action data-action-id="data-management-panel" icon="map" text="Data Management"></calcite-action>
           <calcite-action data-action-id="versions" icon="data" text="Versions" id="version-action-btn"></calcite-action>
-          <calcite-action data-action-id="session-management" icon="data" text="sessionManagement"></calcite-action>
-          <calcite-action data-action-id="reconcile-post" icon="data" text="Reconcile and Post"></calcite-action>
+          <calcite-action data-action-id="session-management" icon="edit-geometry" text="sessionManagement"></calcite-action>
+          <calcite-action data-action-id="reconcile-post" icon="upload-to" text="Reconcile and Post"></calcite-action>
+          <calcite-action data-action-id="widget-menu" icon="widgets-group" text="Widget Menu"></calcite-action>
         </calcite-action-bar>
     
         <calcite-panel heading="Layers" data-panel-id="layers" hidden>
@@ -140,9 +141,12 @@
           <calcite-flow id="sm">
             <calcite-flow-item>
               <calcite-button id="start-editing-flow-btn" >Start Edit Session</calcite-button>
+              <br>
               <calcite-button id="stop-editing-flow-btn" disabled >Stop Edit Session</calcite-button>
-              <calcite-button id="undo">Undo</calcite-button>
-              <calcite-button id="redo">Redo</calcite-button>
+              <br>
+              <calcite-button disabled id="undo">Undo</calcite-button>
+              <br>
+              <calcite-button disabled id="redo">Redo</calcite-button>
               <calcite-notice icon="exclamation-mark-triangle" id="save-revert-notice" slot="footer" kind="warning">
                 <div slot="title">Save or Revert changes!</div>
                 <div slot="message">Saving edits will save all edits to current version. Reverting will discard all edits in this edit session.
@@ -150,6 +154,14 @@
                 <div slot="link">
                   <calcite-button text="Revert" appearance="outline" id="revert-notice-btn">Revert</calcite-button>
                   <calcite-button text="Save" id="save-notice-btn">Save</calcite-button>
+                </div>
+              </calcite-notice>
+              <calcite-notice icon="exclamation-mark-triangle" id="change-version-notice" slot="footer" kind="warning">
+                <div slot="title">Version switching is not allowed while in an edit session</div>
+                <div slot="message">Please stop edit session to enable version switching
+                </div>
+                <div slot="link">
+                  <calcite-button text="Okay" id="okay">Okay</calcite-button>
                 </div>
               </calcite-notice>
             </calcite-flow-item>
@@ -171,7 +183,23 @@
               </calcite-flow-item>
             </calcite-flow>
           </calcite-panel>
-         <!-- Session Managment -->
+   <!-- widget menu -->
+          <calcite-panel heading="Widgets" data-panel-id="widget-menu" hidden>
+            <calcite-flow id="widgets">
+              <calcite-flow-item>
+                <calcite-button id="trace-widget">Activate Trace Widget</calcite-button>
+                <br>
+                <calcite-button id="editor-widget">Activate Editor Widget</calcite-button>
+                <br>
+                <calcite-button id="validate-widget">Activate ValidateNetworkTopologyWidget</calcite-button>
+                <br>
+                <calcite-button id="associations-widget">Activate ViewAssocationsWidget</calcite-button>
+                <br>
+                </calcite-notice>
+              </calcite-flow-item>
+            </calcite-flow>
+          </calcite-panel>
+      
        
       </calcite-shell-panel>
       <!-- create version flow item -->

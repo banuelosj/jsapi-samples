@@ -8,6 +8,11 @@ require([
   "esri/versionManagement/VersionManagementService",
   "esri/rest/featureService/FeatureService",
   "esri/config",
+  "esri/widgets/UtilityNetworkTrace",
+  "esri/widgets/UtilityNetworkValidateTopology",
+  "esri/widgets/UtilityNetworkAssociations",
+  "esri/layers/FeatureLayer"
+
 ], function(
   WebMap,
   MapView,
@@ -17,7 +22,12 @@ require([
   reactiveUtils,
   VersionManagementService,
   FeatureService,
-  esriConfig
+  esriConfig,
+  UtilityNetworkTrace,
+  UtilityNetworkValidateTopology,
+  UtilityNetworkAssociations,
+  FeatureLayer
+
 ) {
 
   /***
@@ -34,10 +44,10 @@ require([
    * 10. Utility Network Trace widget
    * 11. Sorting version list view
    */
-  let utilityNetwork, rulesTable;
+  let utilityNetwork, rulesTable, dirtyArea;
   let activeWidget;
   let portalOrg, webMapId;
-  let editor;
+  let editor, tracer, validateTopolgy, showAssociations;
   let view;
   let fs, vms;
   let webmap;
@@ -66,6 +76,7 @@ require([
         id: webMapId
       }
     });
+  
     loadInitialMap(webmap);
     document.getElementById("webmap-modal").open = false;
   }
@@ -79,13 +90,26 @@ require([
     editor = new Editor({
       view: view
     });
+    addTraceWidget();
     view.ui.add(editor, "top-right");
-
+    editor.visible = false;
+    
     const layerList = new LayerList({ view, container: "layers-container" });
     const legend = new Legend({ view, container: "legend-container" });
-
+   
     view.when(async () => {
       await view.map.loadAll();
+      await webmap.utilityNetworks.getItemAt(0).load();
+      utilityNetwork = webmap.utilityNetworks.getItemAt(0);
+      const dirtyArea = new FeatureLayer({
+        // URL to the dirty area
+        url: webmap.utilityNetworks.getItemAt(0).networkSystemLayers.dirtyAreasLayerUrl
+      });
+      await dirtyArea.load();
+      console.log(dirtyArea);
+      addAssociationsWidget();
+      addValidateNetworkTopologyWidget();
+      await webmap.add(dirtyArea);
       // DELETE: temp interceptor for testing
       esriConfig.request.interceptors.push(
         {
@@ -116,7 +140,7 @@ require([
 
         // Triggers the loading of the UtilityNetwork instance.
         await utilityNetwork.load();
-
+        console.log(utilityNetwork);
         // load the rules table
         rulesTable = await utilityNetwork.getRulesTable();
         await rulesTable.load();
@@ -133,7 +157,7 @@ require([
   
   document.querySelector("calcite-action-bar").addEventListener("click", handleActionBarClick);
   document.querySelector("calcite-shell").hidden = false;
-  const buttonsThatNeedToBeReenabled = [];
+  let  buttonsThatNeedToBeReenabled = [];
 
   const list = document.getElementById("listEl");
   const versionList = document.getElementById("versionListEl");
@@ -203,6 +227,24 @@ require([
   postBtn.addEventListener("click", post);
   reconcileByAttributeBtn.addEventListener("click", reconcileByAttribute);
   reconcileByObjectBtn.addEventListener("click", reconcileByObject);
+
+  //Widgets
+  const traceWidgetBtn =  document.getElementById("trace-widget");
+  const editorWidgetBtn =  document.getElementById("editor-widget");
+  const validateTopologyBtn =  document.getElementById("validate-widget");
+  const showAssociationsBtn =  document.getElementById("associations-widget");
+
+  traceWidgetBtn.addEventListener("click", () => showWidget(0));
+  editorWidgetBtn.addEventListener("click", () => showWidget(1));
+  validateTopologyBtn.addEventListener("click",() =>  showWidget(2));
+  showAssociationsBtn .addEventListener("click", () => showWidget(3));
+
+  //Warning while in session
+   // save revert
+   const changeVersionNotice =  document.getElementById("change-version-notice");
+   const okayBtn = document.getElementById("okay");
+   okayBtn.addEventListener("click", () => changeVersionNotice.open = false);
+
   // input event listening
   orgNameInput.addEventListener('calciteInputInput', (evt) => {
     updateBtn.disabled = false;
@@ -346,7 +388,6 @@ require([
         }
       }
     });
-
     await webmap.load();
     view.map = webmap;
 
@@ -355,6 +396,7 @@ require([
       () => {
         view.goTo(view.map.initialViewProperties.viewpoint.targetGeometry)
         addEditor(view.map.editableLayers.items);
+        addTraceWidget();
         loadFSAndVMS(view.map.editableLayers.items[0]);
       }, { once: true }
     );
@@ -383,12 +425,41 @@ require([
       view: view,
     });
     view.ui.add(editor, "top-right");
-
+    editor.visible = false;
     editor.snappingOptions.enabled = true;
     editor.snappingOptions.featureEnabled = true;
     enableSnappingOnLayers(editableLayers);
   }
 
+  function addTraceWidget(){
+    tracer = new UtilityNetworkTrace({
+      view: view
+    });
+    
+    view.ui.add(tracer, "top-right");
+    tracer.visible = false;
+  }
+
+  function addValidateNetworkTopologyWidget(){
+    validateTopolgy = new UtilityNetworkValidateTopology({
+      view: view,
+      utilityNetwork: utilityNetwork
+    });
+    
+    view.ui.add(validateTopolgy, "top-right");
+    validateTopolgy.visible = false;
+  }
+
+
+  function addAssociationsWidget(){
+    showAssociations = new UtilityNetworkAssociations({
+      view: view,
+      utilityNetwork: utilityNetwork
+    });
+    
+    view.ui.add(showAssociations, "top-right");
+    showAssociations.visible = false;
+  }
   async function loadFSAndVMS(layer) {
     const { url } = layer;
     if(!!url) { 
@@ -558,57 +629,71 @@ require([
     });
   }
   async function stopEditingSaveEdits() {
+    document.body.style.cursor='wait';
+    await blockButtonInput()
     await vms.stopEditing(currentVersionIdentifier, true).then(async (response) => {
       console.log("successfully stopped editing version");
       saveRevertNotice.open = false;
       await stopReading();
+      await returnButtonsToPreviousState()
       startEditingBtn.disabled = false;
       stopEditingBtn.disabled = true;
+      versionActionBtn.disabled = false;
     }).catch((err) => {
       console.log("failed to stop editing: ", err);
     });
   }
   async function stopEditingRevertEdits() {
+    document.body.style.cursor='wait';
+    await blockButtonInput()
     await vms.stopEditing(currentVersionIdentifier,false).then(async (response) => {
       console.log("successfully stopped editing version");
       saveRevertNotice.open = false;
       await stopReading();
+      await returnButtonsToPreviousState()
       startEditingBtn.disabled = false;
       stopEditingBtn.disabled = true;
+      versionActionBtn.disabled = false;
+      
+      clearInterval(undoInterval);
+      clearInterval(redoInterval);
+      undoBtn.disabled = true;
+      redoBtn.disabled = true;
     }).catch((err) => {
       console.log("failed to stop editing: ", err);
     });
   }
   async function startEditSession(){
     document.body.style.cursor='wait';
-    startEditingBtn.disabled = true;
-    stopEditingBtn.disabled = false;
     await blockButtonInput()
     await startReading();
     await startEditing();
     await returnButtonsToPreviousState()
+    startEditingBtn.disabled = true;
+    stopEditingBtn.disabled = false;
+    versionActionBtn.disabled = true;
+    changeVersionNotice.open = true;
+    undoInterval = setInterval(() => vms.canUndo(currentVersionIdentifier) === true ? undoBtn.disabled = false : undoBtn.disabled = true, 1000);
+    redoInterval = setInterval(() => vms.canRedo(currentVersionIdentifier) === true ? redoBtn.disabled = false : redoBtn.disabled = true, 1000);
+    
   }
   async function stopEditSession(){
     saveRevertNotice.open = true;
   }
   async function undo() {
-    await vms.undo(currentVersionIdentifier).then(async (response) => {
-      console.log("successfully stopped editing version");
-    }).catch((err) => {
-      console.log("failed to stop editing: ", err);
-    });
+    await vms.undo(currentVersionIdentifier)
   }
   async function redo() {
-    await vms.redo(currentVersionIdentifier).then(async (response) => {
-      console.log("successfully stopped editing version");
-    }).catch((err) => {
-      console.log("failed to stop editing: ", err);
-    });
+    await vms.redo(currentVersionIdentifier)
   }
   async function reconcileByAttribute() {
     await vms.reconcile(currentVersionIdentifier, {conflictDetection: "by-attribute"}).then(async (response) => {
       console.log("successfully reconciled version");
       reconcileNotice.open = false;
+      await blockButtonInput()
+      await returnButtonsToPreviousState()
+      postBtn.disabled = false;
+      reconcileBtn.disabled = true;
     }).catch((err) => {
       console.log("failed to reconcile version: ", err);
     });
@@ -617,6 +702,10 @@ require([
     await vms.reconcile(currentVersionIdentifier, {conflictDetection: "by-object"}).then(async (response) => {
       console.log("successfully reconciled version");
       reconcileNotice.open = false;
+      await blockButtonInput()
+      await returnButtonsToPreviousState()
+      postBtn.disabled = false;
+      reconcileBtn.disabled = true;
     }).catch((err) => {
       console.log("failed to reconcile version: ", err);
     });
@@ -624,6 +713,10 @@ require([
   async function post() {
     await vms.post(currentVersionIdentifier).then(async (response) => {
       console.log("post operation wass successful");
+      await blockButtonInput()
+      await returnButtonsToPreviousState()
+      postBtn.disabled = true;
+      reconcileBtn.disabled = false;
     }).catch((err) => {
       console.log("failed to post version changes: ", err);
     });
@@ -631,7 +724,6 @@ require([
   async function blockButtonInput(){
    const buttons = document.querySelectorAll('calcite-button');
    const calciteAction = document.querySelectorAll('calcite-action');
-   editor.visible = false;
    for (let i = 0; i < calciteAction.length; i++) 
       calciteAction[i].disabled = true;
  
@@ -650,7 +742,39 @@ require([
         buttons[buttonsThatNeedToBeReenabled[i]].disabled = false;
     for (let i = 0; i < calciteAction.length; i++) 
           calciteAction[i].disabled = false;
-    editor.visible = true;
     document.body.style.cursor='default';
+    buttonsThatNeedToBeReenabled = [];
   }
+
+  function showWidget(widgetNumber){
+    switch(widgetNumber){
+      case 0:
+        tracer.visible = true;
+        editor.visible = false;
+        validateTopolgy.visible = false;
+        showAssociations.visible = false;
+        break;
+      case 1:
+        tracer.visible = false;
+        editor.visible = true;
+        validateTopolgy.visible = false;
+        showAssociations.visible = false;
+        break;
+      case 2:
+        tracer.visible = false;
+        editor.visible = false;
+        validateTopolgy.visible = true;
+        showAssociations.visible = false;
+        break;
+      case 3:
+        tracer.visible = false;
+        editor.visible = false;
+        validateTopolgy.visible = false;
+        showAssociations.visible = true;
+        break;
+      default:
+        console.log("no case");
+    }
+  }
+
 });
