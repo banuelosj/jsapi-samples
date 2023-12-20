@@ -25,30 +25,6 @@
   </head>
 
   <body>
-    <calcite-modal aria-labelledby="modal-title" id="webmap-modal" open>
-      <div slot="header" id="modal-title">
-        Load a WebMap
-      </div>
-      <div slot="content">
-        <calcite-label>
-          Portal Org
-          <calcite-input placeholder="https://sampleserver7.arcgisonline.com/portal" id="modal-org-input">
-          </calcite-input>
-        </calcite-label>
-          </calcite-input>
-        </calcite-label>
-        <calcite-notice icon="exclamation-mark-triangle" width="full" id="modal-notice">
-          <div slot="message" id="notice-message"></div>
-        </calcite-notice>
-      </div>
-      <calcite-button slot="secondary" width="full" appearance="outline" id="modal-cancel-btn">
-        Cancel
-      </calcite-button>
-      <calcite-button slot="primary" width="full" id="modal-save-btn">
-        Show Available webmaps
-      </calcite-button>
-    </calcite-modal>
-
     <calcite-modal aria-labelledby="modal-title" id="webmap-viewer"  open="false" >
       <div slot="header" id="modal-title">
         Select a Webmap
