@@ -16,6 +16,32 @@ body,
   padding-top: 10px;
   background-color: #ffffff;
 }
+.gallery {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 10px;
+      overflow: auto;
+      height: 300px;
+    }
+    
+    .gallery img {
+      width:  150px;
+      height: auto;
+    }
+    
+    .gallery .caption {
+      text-align: center;
+      font-size: 14px;
+      margin-top: 5px;
+    }
 
-
+#gallery-initial-webmap img {
+      width:  150px;
+      height: auto;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+ 
+}
 

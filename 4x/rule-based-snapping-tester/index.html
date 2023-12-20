@@ -35,9 +35,6 @@
           <calcite-input placeholder="https://sampleserver7.arcgisonline.com/portal" id="modal-org-input">
           </calcite-input>
         </calcite-label>
-        <calcite-label>
-          WebMap Id
-          <calcite-input placeholder="cff20b71fdae4b3393b530b0099e4390" id="modal-webmap-input">
           </calcite-input>
         </calcite-label>
         <calcite-notice icon="exclamation-mark-triangle" width="full" id="modal-notice">
@@ -48,8 +45,24 @@
         Cancel
       </calcite-button>
       <calcite-button slot="primary" width="full" id="modal-save-btn">
-        Save
+        Show Available webmaps
       </calcite-button>
+    </calcite-modal>
+
+    <calcite-modal aria-labelledby="modal-title" id="webmap-viewer"  open="false" >
+      <div slot="header" id="modal-title">
+        Select a Webmap
+      </div>
+      <div slot="content">
+        <calcite-label>
+          Portal Org
+        </calcite-label>
+        <div class="gallery" id="gallery-initial-webmap">
+        </div>
+          </calcite-input>
+      </div>
+
+
     </calcite-modal>
 
     <calcite-shell content-behind>
@@ -59,7 +72,6 @@
           <calcite-action data-action-id="layers" icon="layers" text="Layers"></calcite-action>
           <calcite-action data-action-id="legend" icon="legend" text="Legend"></calcite-action>
           <calcite-action data-action-id="rules-table" icon="object-detection" text="Rules Table"></calcite-action>
-          <calcite-action data-action-id="data-management-panel" icon="map" text="Data Management"></calcite-action>
           <calcite-action data-action-id="versions" icon="data" text="Versions" id="version-action-btn"></calcite-action>
           <calcite-action data-action-id="session-management" icon="edit-geometry" text="sessionManagement"></calcite-action>
           <calcite-action data-action-id="reconcile-post" icon="upload-to" text="Reconcile and Post"></calcite-action>
@@ -80,28 +92,6 @@
             </calcite-list-item>
           </calcite-list>
         </calcite-panel>
-        <calcite-panel heading="Set WebMap" data-panel-id="data-management-panel" hidden>
-          <calcite-label class="top-space">
-            <calcite-tooltip-manager>
-              Portal Org (default ArcGIS Online)
-              <calcite-icon icon="question" id="help-icon" appearance="inline" scale="s"></calcite-icon>
-            </calcite-tooltip-manager>
-            <calcite-input placeholder="portal organization..." type="text" id="orgNameInput">
-            </calcite-input>
-          </calcite-label>
-          </calcite-label>
-          <calcite-label>
-            <calcite-tooltip-manager>
-              WebMap ID
-              <calcite-icon icon="question" id="id-help-icon" appearance="inline" scale="s"></calcite-icon>
-            </calcite-tooltip-manager>
-            <calcite-input placeholder="webmap id..." type="text" id="webmapIdInput">
-            </calcite-input>
-          </calcite-label>
-          <calcite-label>
-            <calcite-button id="updateBtn" disabled>Update</calcite-button>
-          </calcite-label>
-          </calcite-panel>
           <calcite-tooltip reference-element="help-icon" placement="auto" offset-distance="6" offset-skidding="0"
             aria-hidden="true" id="calcite-tooltip-7c47e001-bc71-4669-42e3-1dd87b10b65a" role="tooltip"
             data-popper-placement="bottom"

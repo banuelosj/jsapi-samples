@@ -11,7 +11,10 @@ require([
   "esri/widgets/UtilityNetworkTrace",
   "esri/widgets/UtilityNetworkValidateTopology",
   "esri/widgets/UtilityNetworkAssociations",
-  "esri/layers/FeatureLayer"
+  "esri/layers/FeatureLayer",
+  "esri/portal/Portal",
+  "esri/portal/PortalQueryParams",
+  "esri/identity/IdentityManager"
 
 ], function(
   WebMap,
@@ -26,7 +29,10 @@ require([
   UtilityNetworkTrace,
   UtilityNetworkValidateTopology,
   UtilityNetworkAssociations,
-  FeatureLayer
+  FeatureLayer,
+  Portal, 
+  PortalQueryParams,
+  esriId
 
 ) {
 
@@ -46,7 +52,7 @@ require([
    */
   let utilityNetwork, rulesTable, dirtyArea;
   let activeWidget;
-  let portalOrg, webMapId;
+  let portalOrg, webMapId, portalItems;
   let editor, tracer, validateTopolgy, showAssociations;
   let view;
   let fs, vms;
@@ -63,11 +69,44 @@ require([
   const modalSaveBtn = document.getElementById("modal-save-btn");
   modalSaveBtn.onclick = () => { submitModal() };
 
-  function submitModal() {
-    portalOrg = document.getElementById("modal-org-input").value;
-    webMapId = document.getElementById("modal-webmap-input").value;
+  function sleep(ms) {  return new Promise(resolve => setTimeout(resolve, ms));}
+   function submitModal() {
+    portalOrg =  document.getElementById("modal-org-input").value;
+    let portal =  new Portal({
+      url: portalOrg, // First instance
+    });
+ 
 
-    let orgId = !portalOrg ? "https://arcgis.com" : portalOrg;
+    // Once portal is loaded, user signed in
+    portal.load().then(async () => {
+    await sleep(10000);
+    await esriId.getCredential(portal.url);
+    // Create query parameters for the portal search
+    // This object autocasts as new PortalQueryParams()
+    let queryParams = {
+      query: `orgid:0123456789ABCDEF (type:("Web Map" OR "CityEngine Web Scene") -type:"Web Mapping Application")  -type:"Code Attachment" -type:"Featured Items" -type:"Symbol Set" -type:"Color Set" -type:"Windows Viewer Add In" -type:"Windows Viewer Configuration" -type:"Map Area" -typekeywords:"MapAreaPackage"`,
+      sortField: "numViews",
+      sortOrder: "desc",
+      num: 1000
+    };
+    // Query the items based on the queryParams created from portal above
+    portalItems = await portal.queryItems(queryParams);
+    console.log(portalItems);
+    portalItems = portalItems.results;
+    document.getElementById("webmap-modal").open = false;
+    let portalItemsInitalMap = document.getElementById("gallery-initial-webmap");
+    portalItemsInitalMap.innerHTML = "";
+    portalItems.forEach((item) => {
+    if(item.displayName === "Web Map"){
+    portalItemsInitalMap.insertAdjacentHTML("beforeend",`<a id=web-mapId${item.id} href="#"><div><img src=${item.thumbnailUrl} alt="Image1"><div class="caption" text-align: "center">${item.title}</div></div></a>`)
+    document.getElementById(`web-mapId${item.id}`).addEventListener("click",  () => setInitialMap(item.portal.portalHostname, item.id));
+    }
+    document.getElementById("webmap-viewer").open = true;
+  });
+  showPortalItemsInUpdateMapView(portalItems);
+  });
+ 
+   let orgId = !portalOrg ? "https://arcgis.com" : portalOrg;
     webmap = new WebMap({
       portalItem: {
         portal: {
@@ -77,8 +116,7 @@ require([
       }
     });
   
-    loadInitialMap(webmap);
-    document.getElementById("webmap-modal").open = false;
+   loadInitialMap(webmap);
   }
 
   function loadInitialMap(webmap) {
@@ -99,29 +137,21 @@ require([
    
     view.when(async () => {
       await view.map.loadAll();
+      try{
       await webmap.utilityNetworks.getItemAt(0).load();
       utilityNetwork = webmap.utilityNetworks.getItemAt(0);
-      const dirtyArea = new FeatureLayer({
+      dirtyArea = new FeatureLayer({
         // URL to the dirty area
         url: webmap.utilityNetworks.getItemAt(0).networkSystemLayers.dirtyAreasLayerUrl
       });
       await dirtyArea.load();
-      console.log(dirtyArea);
+    }catch(error)
+    {console.log("no UN")}
       addAssociationsWidget();
       addValidateNetworkTopologyWidget();
       await webmap.add(dirtyArea);
       // DELETE: temp interceptor for testing
-      esriConfig.request.interceptors.push(
-        {
-          urls: view.map.editableLayers.items[0].url,
-          after: async (response) => {
-            if(response.data.currentVersion && response.data.currentVersion < 11.2) {
-              response.data.currentVersion = "11.2";
-            }
-
-          }
-        }
-      );
+     
 
       editor.snappingOptions.enabled = true;
       editor.snappingOptions.featureEnabled = true;
@@ -151,6 +181,18 @@ require([
     });
   }
   
+  function setInitialMap(portal, item){
+    webmap = new WebMap({
+      portalItem: {
+        portal: {
+          url: "https://" + portal
+        },
+        id: item
+      }
+    });
+    document.getElementById("webmap-viewer").open = false;
+    loadInitialMap(webmap);
+  }
 
   // UI
   // Add the widget to the view
@@ -166,10 +208,7 @@ require([
   filterInput.addEventListener("calciteInputTextInput", handleInputFilter);
   const versionsFilterInput = document.getElementById("versionsFilterInput");
   versionsFilterInput.addEventListener("calciteInputTextInput", handleInputVersionsFilter);
-  const orgNameInput = document.getElementById("orgNameInput");
-  const webmapIdInput = document.getElementById("webmapIdInput");
-  const updateBtn = document.getElementById("updateBtn");
-  updateBtn.onclick = () => { updateWebMap() };
+ 
 
   const versionActionBtn = document.getElementById("version-action-btn");
   const createVersionFabBtn = document.getElementById("create-version-fab-btn");
@@ -239,20 +278,15 @@ require([
   validateTopologyBtn.addEventListener("click",() =>  showWidget(2));
   showAssociationsBtn .addEventListener("click", () => showWidget(3));
 
+  //PortalItems
+  const portalItemsAction = document.getElementById("gallery-update-webmap");
+
   //Warning while in session
    // save revert
    const changeVersionNotice =  document.getElementById("change-version-notice");
    const okayBtn = document.getElementById("okay");
    okayBtn.addEventListener("click", () => changeVersionNotice.open = false);
 
-  // input event listening
-  orgNameInput.addEventListener('calciteInputInput', (evt) => {
-    updateBtn.disabled = false;
-  });
-
-  webmapIdInput.addEventListener('calciteInputInput', (evt) => {
-    updateBtn.disabled = false;
-  });
 
   function handleActionBarClick({ target }) {
     if (target.tagName !== "CALCITE-ACTION") {
@@ -745,6 +779,56 @@ require([
     document.body.style.cursor='default';
     buttonsThatNeedToBeReenabled = [];
   }
+  async function updateWeb(portalLink, itemId){
+    // portalOrg = orgNameInput.value;
+    // webMapId = webmapIdInput.value;
+console.log(portalLink);
+console.log(itemId);
+    view.ui.remove(editor);
+    editor.destroy();
+    view.map.destroy();
+
+   // let orgId = !portalOrg ? "https://arcgis.com" : portalOrg;
+
+    webmap = new WebMap({
+      portalItem: {
+        id: itemId,
+        portal: {
+          url: "https://" + portalLink
+        }
+      }
+    });
+    await webmap.load();
+    view.map = webmap;
+
+    reactiveUtils.watch(
+      () => !view.updating,
+      () => {
+        view.goTo(view.map.initialViewProperties.viewpoint.targetGeometry)
+        addEditor(view.map.editableLayers.items);
+        addTraceWidget();
+        loadFSAndVMS(view.map.editableLayers.items[0]);
+      }, { once: true }
+    );
+
+    updateBtn.disabled = true;
+
+    // Check if webmap contains utility networks.
+    if (webmap.utilityNetworks?.length > 0) {
+      //setVersion(view.map.layers.items, MY_VERSION);
+
+      // Assigns the utility network at index 0 to utilityNetwork. 
+      utilityNetwork = webmap.utilityNetworks.getItemAt(0);
+
+      // Triggers the loading of the UtilityNetwork instance.
+      await utilityNetwork.load();
+
+      // load the rules table
+      rulesTable = await utilityNetwork.getRulesTable();
+      await rulesTable.load();
+      displayRulesInPanel(rulesTable);
+    }
+  }
 
   function showWidget(widgetNumber){
     switch(widgetNumber){
@@ -776,5 +860,13 @@ require([
         console.log("no case");
     }
   }
-
+  async function showPortalItemsInUpdateMapView(portalItems){
+    portalItemsAction.innerHTML = "";
+    portalItems.forEach((item) => {
+      if(item.displayName === "Web Map"){
+      portalItemsAction.insertAdjacentHTML("beforeend",`<a id=webmapId${item.id} href="#"><div><img src=${item.thumbnailUrl} alt="Image1"><div class="caption" text-align: "center">${item.title}</div></div></a>`)
+      document.getElementById(`webmapId${item.id}`).addEventListener("click",  () => updateWeb(item.portal.portalHostname, item.id));
+      }
+    });
+  }
 });
