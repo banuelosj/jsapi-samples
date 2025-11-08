@@ -13,7 +13,11 @@ This html file is ready for deployment. This sample uses  [NUFORC](https://nufor
 Run the application. Click on the symbols on the map to display a popup. The popup will contain information pulled from the NUFORC database to further describe the sightings reported for the location clicked.
 
 ## Deployment
-One can deploy the application over a local web server (example: ISS), but it can also be ran directly from your computer by double clicking the html file when downloaded.
+One can deploy the application over a local web server (example: IIS), but it can also be ran directly from your computer by double clicking the html file when downloaded.
+
+## Live App
+
+[NUFORC UAP sightings](https://banuelosj.github.io/jsapi-samples/4x/cim)
 
 ## Built With
 
